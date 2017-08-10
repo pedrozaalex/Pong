@@ -5,13 +5,16 @@ using UnityEngine.UI;
 
 public class ScorePoint : MonoBehaviour
 {
-    int playerOneScore = 0, playerTwoScore = 0;
+    private int PlayerOneScore = 0, PlayerTwoScore = 0;
 
-    public float speed;
+    // This will aid in sending the ball towards the loser
+    private int LastWinner = 0;
+
+    public float Speed;
 
     // For keeping track of the ball's position
-    Transform ball;
-    public Rigidbody ballRB;
+    Transform Ball;
+    public Rigidbody BallRB;
 
     public Text PlayerOneScoreText;
     public Text PlayerTwoScoreText;
@@ -20,7 +23,7 @@ public class ScorePoint : MonoBehaviour
     private void Awake()
     {
         // TODO: Implement speed difficulty level switch 
-        speed = 5f;
+        Speed = 5f;
         CountdownText.text = "";
     }
 
@@ -28,33 +31,32 @@ public class ScorePoint : MonoBehaviour
     {
         if (CompareTag("Ball"))
         {
-            ball = GetComponent<Transform>();
+            Ball = GetComponent<Transform>();
+            BallRB = GetComponent<Rigidbody>();
         }
         else
-            ball = null;
+            Ball = null;
 
         PlayerOneScoreText.color = Color.white;
         PlayerTwoScoreText.color = Color.white;
 
         updateScores();
     }
-
-    private void FixedUpdate()
-    {
-    }
-
+    
     private void OnTriggerEnter(Collider collider)
     {
         if (collider.CompareTag("PlayerOneWinCondition"))
         {
-            ++playerOneScore;
+            ++PlayerOneScore;
+            LastWinner = 1;
             updateScores();
             StartCoroutine(resetPositions());
-
+            
         }
         else if (collider.CompareTag("PlayerTwoWinCondition"))
         {
-            ++playerTwoScore;
+            ++PlayerTwoScore;
+            LastWinner = 2;
             updateScores();
             StartCoroutine(resetPositions());
         }
@@ -66,8 +68,8 @@ public class ScorePoint : MonoBehaviour
     {
         // As implied by the name, simply changes sends the values contained
         // in the playerXScore variables to the objects player playerXScoreText
-        PlayerOneScoreText.text = playerOneScore.ToString();
-        PlayerTwoScoreText.text = playerTwoScore.ToString();
+        PlayerOneScoreText.text = PlayerOneScore.ToString();
+        PlayerTwoScoreText.text = PlayerTwoScore.ToString();
     }
 
     public IEnumerator resetPositions()
@@ -79,9 +81,9 @@ public class ScorePoint : MonoBehaviour
 
         // The ball should always start either at the top or at the bottom
         if (rand)
-            ballRB.position = new Vector3(0, 4.8f, 0);
+            BallRB.position = new Vector3(0, 4.8f, 0);
         else
-            ballRB.position = new Vector3(0, -4.8f, 0);
+            BallRB.position = new Vector3(0, -4.8f, 0);
 
 
         /*
@@ -96,11 +98,8 @@ public class ScorePoint : MonoBehaviour
          */
 
 
-        int direction;
-        if (rand)
-            direction = -1;
-        else
-            direction = 1;
+        int direction = 300;
+        
 
         /*
          * My requirements for the ball's initial speed were:
@@ -108,11 +107,31 @@ public class ScorePoint : MonoBehaviour
          * in which the ball takes too long to travel between each racket
          * 
          * # In every match the ball should start with the same velocity vector magnitude
+         * 
+         * # The ball should go towards the loser, but randomly at the start
          */
 
-        ballRB.velocity = Vector3.left * direction + Vector3.up * Random.Range(-1f, 1f);
-        ballRB.velocity.Normalize();
-        ballRB.velocity *= speed;
+        if ((PlayerOneScore == 0) && (PlayerTwoScore == 0))
+        {
+            if (rand)
+            direction = -1;
+        else
+            direction = 1;
+        }
+        else
+        {
+            if (LastWinner == 1)
+                // Points right when multiplied by Vector3.right
+                direction = 1;
+            if (LastWinner == 2)
+
+                // Points left when multiplied by Vector3.right
+                direction = -1;
+        }
+
+        BallRB.velocity = Vector3.right * direction + Vector3.up * Random.Range(-1f, 1f);
+        BallRB.velocity.Normalize();
+        BallRB.velocity *= Speed;
     }
 
     private IEnumerator startCountdown()
