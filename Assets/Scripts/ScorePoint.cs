@@ -13,7 +13,6 @@ public class ScorePoint : MonoBehaviour
     public float Speed;
 
     // For keeping track of the ball's position
-    Transform Ball;
     public Rigidbody BallRB;
 
     public Text PlayerOneScoreText;
@@ -31,11 +30,9 @@ public class ScorePoint : MonoBehaviour
     {
         if (CompareTag("Ball"))
         {
-            Ball = GetComponent<Transform>();
             BallRB = GetComponent<Rigidbody>();
         }
         else
-            Ball = null;
 
         PlayerOneScoreText.color = Color.white;
         PlayerTwoScoreText.color = Color.white;
